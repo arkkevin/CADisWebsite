@@ -8,19 +8,20 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Characteristics extends CI_Controller {
-    public function index($id_cell) {
+    public function sizing_options($database, $id_cell) {
         $this->load->helper('url');
         $data['url_characteristics'] = site_url('characteristics/performance_table');
         $this->load->model('Performance_model');
-        $ret = $this->Performance_model->GetDistinctPerformanceSizeForCell($id_cell);
+        $ret = $this->Performance_model->GetDistinctPerformanceSizeForCell($database, $id_cell);
         $data['ret'] = $ret;
         $data['id_cell'] = $id_cell;
-        $this->load->view('cell_overview', $data);
+        $data['database'] = $database;
+        $this->load->view('cell_sizes_view', $data);
     }
 
-    public function performance_table($id_cell, $str_size) {
+    public function performance_table($database, $id_cell, $str_size) {
         $this->load->model('Performance_model');
-        $ret = $this->Performance_model->GetPerformanceDataForCellNSize($id_cell, $str_size);
+        $ret = $this->Performance_model->GetPerformanceDataForCellNSize($database, $id_cell, $str_size);
         $input_slew_array = array();
         $output_load_array = array();
 
