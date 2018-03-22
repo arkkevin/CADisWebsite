@@ -9,16 +9,53 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Cell_library extends CI_Controller
 {
+    public function __construct()
+    {
+        parent::__construct();
+        session_start();
+    }
+
+    private function check_login() {
+        if (!isset($_SESSION['iduser_info'])) {
+            $this->load->helper('url');
+            $data['url_login'] = site_url('login');
+            $this->load->view('login_view', $data);
+            return true;
+        }
+        return false;
+    }
+
     public function show_table()
     {
+        if ($this->check_login()) return;
         $this->load->helper('url');
         $data['url_table_query_ajax'] = site_url('cell_library/table_query_ajax');
         $data['url_show_cell'] = site_url('cell_library/show_cell');
+        $data['url_show_cell_defect'] = site_url('cell_library/show_cell_defect');
         $this->load->view('cell_library_overview', $data);
+    }
+
+    public function show_cell_defect($table_name, $id_cell, $fault_type)
+    {
+        if ($this->check_login()) return;
+        $this->load->helper('url');
+        $data['table_name'] = $table_name;
+        $data['id_cell'] = $id_cell;
+
+        $this->load->model('Cell_library_model');
+        $ret = $this->Cell_library_model->GetCellDefectDetail($table_name, $id_cell, $fault_type);
+        if ($ret != 0 && sizeof($ret) != 0) {
+            $data['data'] = $ret;
+        } else {
+            $data['data'] = array();
+        }
+        $data['fault_type'] = $fault_type;
+        $this->load->view('cell_defect_view', $data);
     }
 
     public function show_cell($table_name, $id_cell)
     {
+        if ($this->check_login()) return;
         $this->load->helper('url');
         $data['url_get_cell_netlist'] = site_url('cell_library/get_cell_netlist');
         $data['url_sizing_options'] = site_url('characteristics/sizing_options');
@@ -26,7 +63,7 @@ class Cell_library extends CI_Controller
         $data['id_cell'] = $id_cell;
 
         $this->load->model('Cell_library_model');
-        $ret = $this->Cell_library_model->GetCellDetails($table_name, $id_cell);
+        $ret = $this->Cell_library_model->GetCellDetail($table_name, $id_cell);
         if ($ret == 0) {
             // no cell found or database error
             $data['netlist'] = 'No data';
@@ -43,7 +80,7 @@ class Cell_library extends CI_Controller
     public function get_cell_netlist($table_name, $id_cell)
     {
         $this->load->model('Cell_library_model');
-        $ret = $this->Cell_library_model->GetCellDetails($table_name, $id_cell);
+        $ret = $this->Cell_library_model->GetCellDetail($table_name, $id_cell);
         $netlist_data = array();
         $node_arr = array();
         $link_arr = array();
@@ -120,6 +157,9 @@ class Cell_library extends CI_Controller
     {
         $table_name = urldecode($_POST['table_name']);
         $query_conditions = urldecode($_POST['query_conditions']);
+        if (empty($query_conditions)) {
+            $query_conditions = "idCELL!=0";
+        }
         $this->load->model('Cell_library_model');
         $ret = $this->Cell_library_model->GetDataWithConditions($table_name, $query_conditions);
         if ($ret != 0 && sizeof($ret) != 0) {

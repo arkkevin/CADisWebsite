@@ -9,6 +9,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-112994406-2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-112994406-2');
+    </script>
+
     <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
     <title>CADis Data-driven Access Point</title>
 
@@ -47,10 +57,33 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                         },
                         {data: 'CELL_PMOS_CNT'},
                         {data: 'CELL_NMOS_CNT'},
-                        {data: 'CELL_BSF'},
+                        {data: 'CELL_FAMILY'},
                         {data: 'CELL_BSF_UNIFIED'},
-                        {data: 'CELL_BSF_weak'},
-                        {data: 'CELL_BSF_weak_UNIFIED'}
+                        {data: 'CELL_BSF_weak_UNIFIED'},
+                        {
+                            data: null, render: function (data, type, row) {
+                                // change the content of the cell
+                                var detectable_open_ratio = data.detectable_open*100/data.total_open;
+                                return '<a target="_blank" href="<?php echo $url_show_cell_defect;?>/' + $('#table_name_box').val() + '/' + data.idCELL + '/open">'
+                                    + data.detectable_open +" / " +data.total_open + " ("+ detectable_open_ratio.toFixed(2) + '%)</a>';
+                            }
+                        },
+                        {
+                            data: null, render: function (data, type, row) {
+                                // change the content of the cell
+                                var detectable_short_ratio = data.detectable_short*100/data.total_short;
+                                return '<a target="_blank" href="<?php echo $url_show_cell_defect;?>/' + $('#table_name_box').val() + '/' + data.idCELL + '/short">'
+                                    + data.detectable_short +" / " +data.total_short + " ("+ detectable_short_ratio.toFixed(2) + '%)</a>';
+                            }
+                        },
+                        {
+                            data: null, render: function (data, type, row) {
+                                // change the content of the cell
+                                var imp_short_ratio = data.imp_short*100/data.total_short;
+                                return '<a target="_blank" href="<?php echo $url_show_cell_defect;?>/' + $('#table_name_box').val() + '/' + data.idCELL + '/short">'
+                                    + data.imp_short +" / " +data.total_short + " ("+ imp_short_ratio.toFixed(2) + '%)</a>';
+                            }
+                        }
                     ]
                 });
             // Apply the search
@@ -72,17 +105,17 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     </script>
 </head>
 <body>
-<div class="container">
+<div class="container" style="margin-top: 50px">
     <form>
-        <legend>CADis Cell Library</legend>
+        <legend class="text-center">CADis Cell Library</legend>
         <div style="margin-bottom:50px">
             <div class="form-group">
                 <label for="query" class="control-label">Library:</label>
                 <input id="table_name_box" type="text" name="table_name" value="WORK_LIB" class="form-control"/>
                 <label for="query" class="control-label">Query:</label>
-                <input id="query_box" type="text" name="query" value="idCELL!=0" class="form-control"/>
+                <input id="query_box" type="text" name="query" value="" class="form-control"/>
             </div>
-            <input type="button" id="id_search_button" value="Search" name="search_button" class="btn btn-primary"/>
+            <input type="button" id="id_search_button" value="Run Query" name="search_button" class="btn btn-primary"/>
         </div>
     </form>
 </div>
@@ -95,10 +128,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             <th>idCELL</th>
             <th>PMOS</th>
             <th>NMOS</th>
-            <th>BSF</th>
+            <th>CELL_FAMILY</th>
             <th>BSF_UNI</th>
-            <th>BSF_weak</th>
             <th>BSF_weak_UNI</th>
+            <th>Detectable_open</th>
+            <th>Detectable_short</th>
+            <th>Imprecise_short</th>
         </tr>
         </thead>
         <tfoot>
@@ -106,10 +141,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             <th>idCELL</th>
             <th>PMOS</th>
             <th>NMOS</th>
-            <th>BSF</th>
+            <th>CELL_FAMILY</th>
             <th>BSF_UNI</th>
-            <th>BSF_weak</th>
             <th>BSF_weak_UNI</th>
+            <th>Detectable_open</th>
+            <th>Detectable_short</th>
+            <th>Imprecise_short</th>
         </tr>
         </tfoot>
     </table>
